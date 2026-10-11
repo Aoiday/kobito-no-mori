@@ -1,1 +1,177 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>こびとの森</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;overflow:hidden;background:#101b16;font-family:sans-serif}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+#title{position:fixed;top:22px;left:0;right:0;text-align:center;color:#f4eed9;font-size:25px;letter-spacing:5px;text-shadow:0 2px 12px #000;pointer-events:none}
+#hint{position:fixed;bottom:22px;left:0;right:0;text-align:center;color:#eee9d6;font-size:13px;text-shadow:0 2px 8px #000;pointer-events:none}
+#status{position:fixed;top:65px;left:0;right:0;text-align:center;color:#c5d7b5;font-size:12px;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="title">こびとの森</div>
+<div id="status">小さな世界をのぞいてみよう</div>
+<div id="hint">指でなぞって森を見回そう 🌿</div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9cae91);
+scene.fog = new THREE.FogExp2(0x9cae91, 0.035);
+
+const camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(0, 5, 12);
+camera.lookAt(0, 1, 0);
+
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+document.body.appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xdcebd4,0x33412b,2));
+
+const sun = new THREE.DirectionalLight(0xffedca,3);
+sun.position.set(-5,10,6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024,1024);
+scene.add(sun);
+
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(45,45,50,50),
+  new THREE.MeshStandardMaterial({color:0x465c35,roughness:1})
+);
+ground.rotation.x=-Math.PI/2;
+ground.receiveShadow=true;
+scene.add(ground);
+
+function material(color,roughness=0.9){
+  return new THREE.MeshStandardMaterial({color,roughness});
+}
+const bark=material(0x57402b);
+const leafColors=[0x294a32,0x3d6240,0x58774a,0x718858];
+const rockMat=[material(0x77796b),material(0x626a58),material(0x898777)];
+
+function makeTree(x,z,size){
+  const tree=new THREE.Group();
+  tree.position.set(x,0,z);
+  tree.scale.setScalar(size);
+
+  const trunk=new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12,0.23,2.4,8),bark
+  );
+  trunk.position.y=1.2;
+  trunk.castShadow=true;
+  tree.add(trunk);
+
+  for(let i=0;i<4;i++){
+    const crown=new THREE.Mesh(
+      new THREE.ConeGeometry(1.05-i*0.12,1.65,9),
+      material(leafColors[Math.floor(Math.random()*leafColors.length)])
+    );
+    crown.position.set(
+      (Math.random()-.5)*.28,
+      2.15+i*.43,
+      (Math.random()-.5)*.25
+    );
+    crown.rotation.y=Math.random()*Math.PI;
+    crown.castShadow=true;
+    tree.add(crown);
+  }
+  scene.add(tree);
+}
+
+for(let i=0;i<65;i++){
+  let x=(Math.random()-.5)*34;
+  let z=(Math.random()-.5)*34;
+  if(Math.abs(x)<3 && z>1 && z<8) continue;
+  makeTree(x,z,0.65+Math.random()*1.15);
+}
+
+for(let i=0;i<90;i++){
+  const x=(Math.random()-.5)*28;
+  const z=(Math.random()-.5)*28;
+  const r=.12+Math.random()*.28;
+  const rock=new THREE.Mesh(
+    new THREE.DodecahedronGeometry(r,1),
+    rockMat[Math.floor(Math.random()*rockMat.length)]
+  );
+  rock.position.set(x,r*.55,z);
+  rock.rotation.set(Math.random(),Math.random()*3,Math.random());
+  rock.scale.y=.55;
+  rock.castShadow=true;
+  rock.receiveShadow=true;
+  scene.add(rock);
+}
+
+const streamMat=new THREE.MeshStandardMaterial({
+  color:0x8ebbb0,roughness:.2,metalness:.15,
+  transparent:true,opacity:.82
+});
+const stream=new THREE.Mesh(new THREE.PlaneGeometry(2.0,22),streamMat);
+stream.rotation.x=-Math.PI/2;
+stream.position.set(0,.025,-1);
+scene.add(stream);
+
+const moss=material(0x78915a);
+for(let i=0;i<130;i++){
+  const r=.06+Math.random()*.15;
+  const tuft=new THREE.Mesh(
+    new THREE.SphereGeometry(r,6,5),moss
+  );
+  tuft.scale.y=.4;
+  tuft.position.set((Math.random()-.5)*24,r*.3,(Math.random()-.5)*24);
+  scene.add(tuft);
+}
+
+let dragging=false,lastX=0,lastY=0;
+let angle=0,tilt=-.18;
+function updateCamera(){
+  const radius=12;
+  camera.position.set(
+    Math.sin(angle)*radius,
+    5+tilt*8,
+    Math.cos(angle)*radius
+  );
+  camera.lookAt(0,1,0);
+}
+renderer.domElement.addEventListener('pointerdown',e=>{
+  dragging=true;lastX=e.clientX;lastY=e.clientY;
+  renderer.domElement.setPointerCapture(e.pointerId);
+});
+renderer.domElement.addEventListener('pointermove',e=>{
+  if(!dragging)return;
+  angle-=(e.clientX-lastX)*.008;
+  tilt=Math.max(-.4,Math.min(.45,tilt+(e.clientY-lastY)*.003));
+  lastX=e.clientX;lastY=e.clientY;
+  updateCamera();
+});
+renderer.domElement.addEventListener('pointerup',()=>dragging=false);
+renderer.domElement.addEventListener('pointercancel',()=>dragging=false);
+
+function animate(){
+  requestAnimationFrame(animate);
+  renderer.render(scene,camera);
+}
+updateCamera();
+animate();
+
+addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+</script>
+</body>
+</html>
+
