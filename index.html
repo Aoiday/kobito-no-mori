@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>こびとの森</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101b18;color:#f6f2df;font-family:sans-serif}
+header{text-align:center;padding:20px 10px 8px}
+h1{font-size:27px;letter-spacing:5px;margin:5px}
+p{color:#c2d3c2;font-size:13px}
+.scene{height:62vh;min-height:370px;max-height:590px;position:relative;overflow:hidden;margin:12px;border:3px solid #a7c8bc;border-radius:48% 48% 25px 25px;background:linear-gradient(#91b9a6 0%,#d2dfba 45%,#425f43 46%,#152c25 100%);box-shadow:0 0 25px #8ac4a455,inset 0 0 22px #fff8}
+.sun{position:absolute;top:12%;left:18%;width:55px;height:55px;background:#fff2ba;border-radius:50%;box-shadow:0 0 35px #fff0ad}
+.moon{position:absolute;top:8%;right:17%;font-size:27px}
+.tree{position:absolute;bottom:23%;font-size:95px;filter:drop-shadow(0 8px 4px #16251c55)}
+.t1{left:2%}.t2{right:0%;font-size:125px}.t3{left:34%;bottom:29%;font-size:75px}
+.ground{position:absolute;bottom:0;width:100%;height:35%;background:radial-gradient(ellipse at top,#78985a,#284b37 68%,#172c25)}
+.pond{position:absolute;bottom:13%;left:36%;width:30%;height:35px;background:#91d6c5;border-radius:50%;box-shadow:0 0 18px #9ef4d4}
+.flower{position:absolute;font-size:28px}
+.f1{bottom:16%;left:18%}.f2{bottom:8%;right:13%}.f3{bottom:29%;right:28%}
+.mist{position:absolute;top:40%;left:0;width:100%;text-align:center;font-size:14px;letter-spacing:5px;color:#f1f5d5}
+.person{position:absolute;bottom:13%;left:48%;font-size:35px}
+.caption{position:absolute;bottom:4%;width:100%;text-align:center;font-size:12px;color:#e3ecd9}
+.controls{padding:0 18px 24px;text-align:center}
+button{background:#d8e6c7;color:#1c392c;border:0;border-radius:30px;padding:14px 22px;font-size:15px;font-weight:bold;margin:5px}
+button:active{transform:scale(.97)}
+#message{font-size:13px;min-height:22px}
+.small{font-size:11px;color:#9eb5a4}
+body.inside .scene{border-radius:12px;height:65vh;background:linear-gradient(#b4cbb0,#e3dcb0 48%,#3b6042 49%,#172c24)}
+body.inside .tree{font-size:180px;bottom:15%}
+body.inside .t1{left:-18%}body.inside .t2{right:-22%}
+body.inside .t3{font-size:135px;left:28%;bottom:24%}
+body.inside .person{display:none}
+body.inside .pond{width:45%;left:28%;height:55px}
+body.inside .mist{top:22%;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+<h1>こびとの森</h1>
+<p>ガラスの向こうに、もうひとつの世界。</p>
+</header>
+<div class="scene">
+<div class="sun"></div><div class="moon">✦</div>
+<div class="mist">静かな森の呼吸</div>
+<div class="tree t1">🌳</div>
+<div class="tree t2">🌲</div>
+<div class="tree t3">🌳</div>
+<div class="ground"></div>
+<div class="pond"></div>
+<div class="flower f1">🍄</div>
+<div class="flower f2">🌿</div>
+<div class="flower f3">✨</div>
+<div class="person">🧚</div>
+<div class="caption" id="caption">小さな森を外から眺めている</div>
+</div>
+<div class="controls">
+<button id="enter">🌱 森の中へ入る</button>
+<button id="discover">🔮 森を感じる</button>
+<p id="message">ここは、あなたのための小さな世界。</p>
+<p class="small">ゆっくり深呼吸して、森を探索しよう。</p>
+</div>
+<script>
+let inside=false;
+const messages=[
+"苔の奥に、小さな光が見えた。",
+"古い木の根元に、秘密の道があるみたい。",
+"泉の水面に、星空が映っている。",
+"ここでは、何もしなくてもいい。",
+"あなたの帰りを待っていた場所なのかもしれない。"
+];
+document.getElementById("enter").onclick=()=>{
+inside=!inside;
+document.body.classList.toggle("inside",inside);
+document.getElementById("enter").textContent=inside?"🌳 森の外へ戻る":"🌱 森の中へ入る";
+document.getElementById("caption").textContent=inside?"小人になって、森の中にいる":"小さな森を外から眺めている";
+document.getElementById("message").textContent=inside?"足元の苔を踏みしめて、ゆっくり進もう。":"ガラスの向こうに、静かな世界が広がっている。";
+};
+document.getElementById("discover").onclick=()=>{
+document.getElementById("message").textContent=messages[Math.floor(Math.random()*messages.length)];
+};
+</script>
+</body>
+</html>
